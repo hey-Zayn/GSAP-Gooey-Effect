@@ -23,10 +23,9 @@ const GooeyCursorReveal = () => {
   useGSAP(() => {
     const lastPointer = { x: 0, y: 0 }
 
-    // Quick setters for position and rotation - slightly slower rotation for "weight"
-    const xCursor = gsap.quickTo(cursorRef.current, "x", { duration: 0.3, ease: "power3.out" });
-    const yCursor = gsap.quickTo(cursorRef.current, "y", { duration: 0.3, ease: "power3.out" });
-    const rotateCursor = gsap.quickTo(cursorRef.current, "rotation", { duration: 0.6, ease: "back.out(1.7)" });
+    // Quick setters for smooth position tracking
+    const xCursor = gsap.quickTo(cursorRef.current, "x", { duration: 0.15, ease: "power2.out" });
+    const yCursor = gsap.quickTo(cursorRef.current, "y", { duration: 0.15, ease: "power2.out" });
 
     const stampSmudgeAt = (x, y, radius) => {
       if (!smudgeContainerRef.current) return
@@ -69,18 +68,14 @@ const GooeyCursorReveal = () => {
       const x = e.clientX - rect.left
       const y = e.clientY - rect.top
 
-      // Calculate velocity for inverse rotation (inertia feel)
-      const vx = e.clientX - lastPointer.x
-      const tilt = gsap.utils.clamp(-40, 40, -vx * 1.2) // Inverse the tilt
-
+      // Follow the mouse exactly for a professional feel
       xCursor(e.clientX)
       yCursor(e.clientY)
-      rotateCursor(tilt)
 
       const dist = Math.hypot(x - lastPointer.x, y - lastPointer.y)
 
       if (dist > config.movementThreshold) {
-        const radius = Math.min(dist * config.sizeFromSpeed, 120)
+        const radius = Math.min(dist * config.sizeFromSpeed, 100)
         stampSmudgeAt(x, y, radius)
         lastPointer.x = e.clientX
         lastPointer.y = e.clientY
@@ -95,7 +90,7 @@ const GooeyCursorReveal = () => {
     <div ref={containerRef} className='relative w-full h-full overflow-hidden bg-[#282A2A] text-white cursor-none select-none'>
 
       <div className='absolute inset-0 flex justify-start items-end p-12 opacity-30'>
-        <h1 className='text-[20vw] font-black uppercase tracking-tighter leading-[0.75] text-[#f2f2f2]'>
+        <h1 className='text-[25vw] font-black uppercase tracking-tighter leading-[0.75] text-[#f2f2f2]'>
           GSAP
         </h1>
       </div>
