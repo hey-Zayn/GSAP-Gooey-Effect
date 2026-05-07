@@ -9,23 +9,23 @@ const GooeyCursorReveal = () => {
   const cursorRef = useRef(null)
 
   const config = {
-    smoothing: 0.1,
-    movementThreshold: 3,
-    sizeFromSpeed: 0.5,
-    expandMultiplier: 3,
-    expandTime: 2.5,
+    smoothing: 0.15,
+    movementThreshold: 1.5, // Lower threshold = denser, smoother trail
+    sizeFromSpeed: 0.6,
+    expandMultiplier: 2.8,
+    expandTime: 2,
     expandEase: "power2.out",
-    dissolveStart: 1,
-    dissolveTime: 3.5,
-    dissolveEase: "power3.inOut",
+    dissolveStart: 0.8,
+    dissolveTime: 4, // Longer dissolve for smoother fade
+    dissolveEase: "sine.inOut",
   }
 
   useGSAP(() => {
     const lastPointer = { x: 0, y: 0 }
 
-    // Quick setters for smooth position tracking
-    const xCursor = gsap.quickTo(cursorRef.current, "x", { duration: 0.15, ease: "power2.out" });
-    const yCursor = gsap.quickTo(cursorRef.current, "y", { duration: 0.15, ease: "power2.out" });
+    // Smoother cursor tracking
+    const xCursor = gsap.quickTo(cursorRef.current, "x", { duration: 0.25, ease: "power3.out" });
+    const yCursor = gsap.quickTo(cursorRef.current, "y", { duration: 0.25, ease: "power3.out" });
 
     const stampSmudgeAt = (x, y, radius) => {
       if (!smudgeContainerRef.current) return
@@ -68,17 +68,19 @@ const GooeyCursorReveal = () => {
       const x = e.clientX - rect.left
       const y = e.clientY - rect.top
 
-      // Follow the mouse exactly for a professional feel
       xCursor(e.clientX)
       yCursor(e.clientY)
 
       const dist = Math.hypot(x - lastPointer.x, y - lastPointer.y)
 
       if (dist > config.movementThreshold) {
-        const radius = Math.min(dist * config.sizeFromSpeed, 100)
+        // Calculate radius with a slight dampening for smoothness
+        const radius = Math.min(dist * config.sizeFromSpeed, 90)
         stampSmudgeAt(x, y, radius)
-        lastPointer.x = e.clientX
-        lastPointer.y = e.clientY
+
+        // Update last pointer with a bit of "lag" for smoother spacing
+        lastPointer.x = x
+        lastPointer.y = y
       }
     }
 
@@ -89,7 +91,7 @@ const GooeyCursorReveal = () => {
   return (
     <div ref={containerRef} className='relative w-full h-full overflow-hidden bg-[#282A2A] text-white cursor-none select-none'>
 
-      <div className='absolute inset-0 flex justify-start items-end p-12 opacity-30'>
+      <div className='absolute inset-0 flex justify-start items-end p-12 opacity-20'>
         <h1 className='text-[25vw] font-black uppercase tracking-tighter leading-[0.75] text-[#f2f2f2]'>
           GSAP
         </h1>
@@ -98,11 +100,12 @@ const GooeyCursorReveal = () => {
       <svg className="absolute inset-0 w-full h-full pointer-events-none">
         <defs>
           <filter id="sumdge-goo">
-            <feGaussianBlur in="SourceGraphic" stdDeviation="25" result="blur" />
+            {/* Increased blur for better liquid blending */}
+            <feGaussianBlur in="SourceGraphic" stdDeviation="35" result="blur" />
             <feColorMatrix
               in="blur"
               type="matrix"
-              values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 50 -18"
+              values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 45 -15"
               result="goo"
             />
             <feComposite in="SourceGraphic" in2="goo" operator="atop" />
@@ -114,8 +117,8 @@ const GooeyCursorReveal = () => {
         </defs>
 
         <foreignObject x="0" y="0" width="100%" height="100%" mask="url(#sumdge-mask)">
-          <div className="w-full h-full bg-[#C9D4C2] flex flex-col items-center justify-center p-20">
-            <h2 className="text-[10vw] font-black text-black leading-[0.8] tracking-tighter uppercase text-center">
+          <div className="w-full h-full bg-[#f2f2f2] flex flex-col items-center justify-center p-20">
+            <h2 className="text-[10vw] font-black text-[#282A2A] leading-[0.8] tracking-tighter uppercase text-center">
               Glistering<br />
               Bespoke<br />
               Branding
@@ -129,5 +132,6 @@ const GooeyCursorReveal = () => {
     </div>
   )
 }
+
 
 export default GooeyCursorReveal
